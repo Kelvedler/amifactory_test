@@ -44,7 +44,7 @@ class MovieListView(ListView):
                 error_set.add('genre__invalid')
         else:
             movie_queryset = self.get_queryset().prefetch_related().all()
-        paginated_movies = Paginator(movie_queryset, 1)
+        paginated_movies = Paginator(movie_queryset, 20)
         total_pages = paginated_movies.num_pages
         if query_parameters.get('page'):
             try:
@@ -54,14 +54,15 @@ class MovieListView(ListView):
             else:
                 if total_pages < page:
                     error_set.add('page__out_of_bounds')
-                movies = paginated_movies.page(page)
+                else:
+                    movies = paginated_movies.page(page)
         else:
             movies = paginated_movies.page(1)
             page = 1
         if error_set:
             return JsonResponse({'errors': list(error_set)}, status=400)
         else:
-            movies = [get_movie_dict(movie) for movie in movies],
+            movies = [get_movie_dict(movie) for movie in movies]
             return JsonResponse({'page': page, 'total': total_pages, 'results': movies})
 
 
